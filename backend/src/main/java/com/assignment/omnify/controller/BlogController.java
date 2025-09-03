@@ -31,7 +31,7 @@ public class BlogController {
 
 
     @GetMapping
-    public ResponseEntity<Page<BlogResponse>> getAllBlogs(
+    public ResponseEntity<Page<BlogResponse>> getAllBlogs(  // pagination is added
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(blogService.getAllBlogs(page, size));
