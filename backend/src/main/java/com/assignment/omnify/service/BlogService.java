@@ -10,9 +10,11 @@ import com.assignment.omnify.repository.BlogRepository;
 import com.assignment.omnify.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
+@Service
 @RequiredArgsConstructor
 public class BlogService {
 

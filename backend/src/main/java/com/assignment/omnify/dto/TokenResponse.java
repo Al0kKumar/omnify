@@ -12,4 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TokenResponse {
     private String token;
+    private String name;
+    private String email;
 }
