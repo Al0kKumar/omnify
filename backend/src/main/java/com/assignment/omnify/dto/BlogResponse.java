@@ -19,13 +19,14 @@ public class BlogResponse {
     private String content;
     private Instant createdAt;
 
-    public static BlogResponse fromEntity(Blog blog,String authorName){
+    public static BlogResponse fromEntity(Blog blog, String authorName) {
         return new BlogResponse(
                 blog.getId(),
                 blog.getTitle(),
-                blog.getContent(),
                 authorName,
+                blog.getContent(),
                 blog.getCreatedAt()
         );
     }
+
 }

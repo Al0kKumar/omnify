@@ -3,6 +3,7 @@ package com.assignment.omnify.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -10,18 +11,20 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    private final String SECRET_KEY = "your_secret_key_here"; // move to application.properties
     private final long EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 hours
+
+    private static final String SECRET_KEY = "ThisIsASuperStrongSecretKeyForJwt1234567890!"; // keep it strong
 
     public String generateToken(String userId, String email) {
         return Jwts.builder()
                 .setSubject(userId)
                 .claim("email", email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
+                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
     public String extractUserId(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -49,6 +52,11 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
+
 }

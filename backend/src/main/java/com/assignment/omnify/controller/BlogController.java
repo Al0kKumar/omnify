@@ -2,12 +2,18 @@ package com.assignment.omnify.controller;
 
 import com.assignment.omnify.dto.BlogRequest;
 import com.assignment.omnify.dto.BlogResponse;
+import com.assignment.omnify.repository.UserRepository;
 import com.assignment.omnify.service.BlogService;
 import com.assignment.omnify.config.JwtUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -17,6 +23,7 @@ public class BlogController {
 
     private final BlogService blogService;
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @PostMapping
     public ResponseEntity<BlogResponse> createBlog(
@@ -44,29 +51,36 @@ public class BlogController {
     }
 
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<BlogResponse> updateBlog(
-            @RequestHeader("Authorization") String authHeader,
             @PathVariable String id,
-            @RequestBody BlogRequest request) {
-
-        String token = authHeader.substring(7);
-        String userId = jwtUtil.extractUserId(token);
+            @RequestBody BlogRequest request,
+            @AuthenticationPrincipal String email) {  // <- directly
+        String userId = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getId();
 
         return ResponseEntity.ok(blogService.updateBlog(id, request, userId));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBlog(
-            @RequestHeader("Authorization") String authHeader,
-            @PathVariable String id) {
 
-        String token = authHeader.substring(7);
-        String userId = jwtUtil.extractUserId(token);
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteBlog(
+            @PathVariable String id,
+            @AuthenticationPrincipal String email) {
+
+        String userId = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getId();
 
         blogService.deleteBlog(id, userId);
 
-        return ResponseEntity.noContent().build();
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Blog deleted successfully");
+        return ResponseEntity.ok(response);
     }
+
+
 
 }

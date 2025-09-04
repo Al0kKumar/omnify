@@ -10,7 +10,9 @@ import com.assignment.omnify.repository.BlogRepository;
 import com.assignment.omnify.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 
@@ -62,15 +64,20 @@ public class BlogService {
 
     public BlogResponse updateBlog(String blogId, BlogRequest request, String userId) {
         Blog blog = blogRepository.findById(blogId)
-                .orElseThrow(() -> new RuntimeException("Blog not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found"));
 
         if (!blog.getUserId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to edit this blog");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the author of this blog");
         }
 
-        blog.setTitle(request.getTitle());
-        blog.setContent(request.getContent());
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            blog.setTitle(request.getTitle());
+        }
+        if (request.getContent() != null && !request.getContent().isBlank()) {
+            blog.setContent(request.getContent());
+        }
 
+        blog.setUpdatedAt(Instant.now());
         Blog updatedBlog = blogRepository.save(blog);
 
         User user = userRepository.findById(userId)
@@ -78,6 +85,7 @@ public class BlogService {
 
         return BlogResponse.fromEntity(updatedBlog, user.getName());
     }
+
 
     public void deleteBlog(String blogId, String userId) {
         Blog blog = blogRepository.findById(blogId)
