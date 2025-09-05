@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PenTool, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import axios from 'axios';
 import { api } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +19,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+
+  const { login } = useAuth(); // ✅ get login from context
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -34,14 +36,8 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const res = await api.post('/auth/login', {
-        email,
-        password
-      });
-
-      // Save JWT in localStorage
-      localStorage.setItem('token', res.data.token);
-      console.log("token is " , res.data.token);
+      // Call login from AuthContext
+      await login(email, password); 
 
       toast({
         title: "Welcome back!",
@@ -50,16 +46,13 @@ const Login = () => {
 
       navigate(from, { replace: true });
     } catch (err: any) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError('Invalid email or password');
-      }
+      setError(err.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
   };
 
+  
   return (
     <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">
       <div className="w-full max-w-md">

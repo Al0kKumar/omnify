@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '@/utils/api'; // axios instance pointing to your backend
 
 interface User {
   id: string;
@@ -19,9 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 
@@ -29,15 +28,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load user from localStorage if token exists
   useEffect(() => {
-    // Check for stored auth token on app load
     const token = localStorage.getItem('omnify_token');
     const storedUser = localStorage.getItem('omnify_user');
-    
+
     if (token && storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-      } catch (error) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`; // attach token to axios
+      } catch {
         localStorage.removeItem('omnify_token');
         localStorage.removeItem('omnify_user');
       }
@@ -48,23 +48,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful login
-      const mockUser = {
-        id: '1',
-        email,
-        name: email.split('@')[0]
+      const res = await api.post('/auth/login', { email, password });
+
+      const token = res.data.token;
+      const userData: User = {
+        id: res.data.id || '',
+        name: res.data.name,
+        email: res.data.email
       };
-      
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      
-      localStorage.setItem('omnify_token', mockToken);
-      localStorage.setItem('omnify_user', JSON.stringify(mockUser));
-      setUser(mockUser);
-    } catch (error) {
-      throw new Error('Login failed');
+
+      localStorage.setItem('omnify_token', token);
+      localStorage.setItem('omnify_user', JSON.stringify(userData));
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(userData);
+    } catch (err: any) {
+      throw new Error(err.response?.data?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -73,23 +71,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful signup
-      const mockUser = {
-        id: '1',
-        email,
-        name
+      const res = await api.post('/auth/signup', { name, email, password });
+
+      const token = res.data.token;
+      const userData: User = {
+        id: res.data.id || '',
+        name: res.data.name,
+        email: res.data.email
       };
-      
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      
-      localStorage.setItem('omnify_token', mockToken);
-      localStorage.setItem('omnify_user', JSON.stringify(mockUser));
-      setUser(mockUser);
-    } catch (error) {
-      throw new Error('Signup failed');
+
+      localStorage.setItem('omnify_token', token);
+      localStorage.setItem('omnify_user', JSON.stringify(userData));
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(userData);
+    } catch (err: any) {
+      throw new Error(err.response?.data?.message || 'Signup failed');
     } finally {
       setIsLoading(false);
     }
@@ -98,10 +94,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('omnify_token');
     localStorage.removeItem('omnify_user');
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     isLoading,
     login,
@@ -110,9 +107,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAuthenticated: !!user
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

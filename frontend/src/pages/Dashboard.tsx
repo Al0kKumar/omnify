@@ -23,39 +23,38 @@ interface Blog {
 const Dashboard = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
     loadBlogs();
-  }, []);
+  }, [isAuthenticated]);
 
   const loadBlogs = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Unauthorized');
-
-      const res = await api.get('/blogs', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get('/blogs'); // api interceptor adds token automatically
 
       const data = res.data.content || [];
       const mappedBlogs = data.map((b: any) => ({
         id: b.id,
         title: b.title,
         content: b.content,
-        authorName: b.authorName,
+        authorName: b.authorName || user?.name,
         createdAt: b.createdAt,
         updatedAt: b.updatedAt || b.createdAt,
       }));
 
       setBlogs(mappedBlogs);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to load your blogs. Please try again.",
+        description: error.response?.data?.message || "Failed to load blogs. Try again.",
         variant: "destructive"
       });
     } finally {
@@ -65,12 +64,7 @@ const Dashboard = () => {
 
   const handleDelete = async (blogId: string) => {
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) throw new Error('Unauthorized');
-
-      await api.delete(`/blogs/${blogId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/blogs/${blogId}`); // token already handled by interceptor
 
       setBlogs(prev => prev.filter(blog => blog.id !== blogId));
       toast({
@@ -80,7 +74,7 @@ const Dashboard = () => {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to delete blog. Please try again.",
+        description: error.response?.data?.message || "Failed to delete blog. Try again.",
         variant: "destructive"
       });
     }
@@ -95,6 +89,7 @@ const Dashboard = () => {
   };
 
   if (isLoading) return <LoadingSpinner />;
+
 
   return (
     <div className="min-h-screen bg-gradient-subtle">

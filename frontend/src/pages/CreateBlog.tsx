@@ -10,77 +10,58 @@ import { Save, Eye, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
 import { api } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
 
-const CreateBlog = () => {
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-  });
+
+  const CreateBlog = () => {
+  const [formData, setFormData] = useState({ title: '', content: '' });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async () => {
+    if (!isAuthenticated) {
+      toast({ title: 'Unauthorized', description: 'Please login first.', variant: 'destructive' });
+      navigate('/login');
+      return;
+    }
+
     if (!formData.title.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a title for your blog post.",
-        variant: "destructive"
-      });
+      toast({ title: 'Error', description: 'Please enter a title.', variant: 'destructive' });
       return;
     }
 
     if (!formData.content.trim()) {
-      toast({
-        title: "Error",
-        description: "Please write some content for your blog post.",
-        variant: "destructive"
-      });
+      toast({ title: 'Error', description: 'Please write some content.', variant: 'destructive' });
       return;
     }
 
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Unauthorized');
+      // api interceptor already adds Authorization header
+      await api.post('/blogs', formData);
 
-      await api.post('/blogs', formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      toast({
-        title: "Blog created!",
-        description: "Your blog post has been successfully created.",
-      });
-
+      toast({ title: 'Blog created!', description: 'Your post has been successfully created.' });
       navigate('/dashboard');
-    } catch (error: any) {
+    } catch (err: any) {
       toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create your blog. Try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: err.response?.data?.message || 'Failed to create blog. Try again.',
+        variant: 'destructive'
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getExcerpt = (content: string) => {
-    return content.substring(0, 150) + (content.length > 150 ? '...' : '');
-  };
+  const getExcerpt = (content: string) => content.substring(0, 150) + (content.length > 150 ? '...' : '');
+  const getReadTime = (content: string) => Math.max(1, Math.ceil(content.split(/\s+/).length / 200));
 
-  const getReadTime = (content: string) => {
-    const wordsPerMinute = 200;
-    const wordCount = content.split(/\s+/).length;
-    return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
-  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">

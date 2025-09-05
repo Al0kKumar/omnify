@@ -20,30 +20,20 @@ const Signup = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const { signup, isLoading } = useAuth();
+  const { signup, isLoading } = useAuth(); // use context
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const validateForm = () => {
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       return 'Please fill in all fields';
     }
-
-    if (formData.password.length < 6) {
-      return 'Password must be at least 6 characters long';
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      return 'Passwords do not match';
-    }
-
+    if (formData.password.length < 6) return 'Password must be at least 6 characters';
+    if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
     return '';
   };
 
@@ -58,30 +48,14 @@ const Signup = () => {
     }
 
     try {
-      // Call backend signup API directly
-      const res = await api.post('/auth/signup', {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
-      });
-
-      // Save token in localStorage
-      localStorage.setItem('token', res.data.token);
-
-
+      await signup(formData.name, formData.email, formData.password); // call context
       toast({
-        title: "Welcome to Omnify!",
-        description: "Your account has been created successfully.",
+        title: 'Welcome to Omnify!',
+        description: 'Your account has been created successfully.',
       });
-
       navigate('/dashboard');
     } catch (err: any) {
-      // Handle backend error message if present
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError('Failed to create account. Please try again.');
-      }
+      setError(err.message || 'Failed to create account. Please try again.');
     }
   };
 

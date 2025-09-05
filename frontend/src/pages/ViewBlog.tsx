@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
 import { api } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Blog {
   id: string;
@@ -26,21 +27,29 @@ const ViewBlog = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { user } = useAuth(); // get current logged-in user
+  const token = localStorage.getItem('omnify_token'); // sync with AuthContext
 
   useEffect(() => {
     if (id) loadBlog();
   }, [id]);
 
   const loadBlog = async () => {
+    if (!token) {
+      toast({
+        title: "Unauthorized",
+        description: "Please login to view this blog.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Unauthorized');
-
       const res = await api.get(`/blogs/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setBlog(res.data);
     } catch (error: any) {
       toast({
@@ -53,16 +62,15 @@ const ViewBlog = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
-  };
 
-  const formatContent = (content: string) => {
-    return content.split('\n').map((line, index) => {
+  const formatContent = (content: string) =>
+    content.split('\n').map((line, index) => {
       if (line.startsWith('## ')) return <h2 key={index} className="text-2xl font-semibold mt-8 mb-4">{line.substring(3)}</h2>;
       if (line.startsWith('### ')) return <h3 key={index} className="text-xl font-semibold mt-6 mb-3">{line.substring(4)}</h3>;
       if (line.trim() === '') return <div key={index} className="h-4"></div>;
@@ -73,7 +81,6 @@ const ViewBlog = () => {
       }
       return <p key={index} className="mb-4 leading-relaxed">{line}</p>;
     });
-  };
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -88,6 +95,7 @@ const ViewBlog = () => {
       </div>
     </div>
   );
+
 
   return (
     <div className="min-h-screen bg-gradient-subtle">

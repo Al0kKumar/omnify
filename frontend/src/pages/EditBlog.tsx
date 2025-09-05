@@ -11,6 +11,7 @@ import { Eye, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
 import { api } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Blog {
   id: string;
@@ -26,21 +27,21 @@ const EditBlog = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
     if (id) loadBlog();
-  }, [id]);
+  }, [id, isAuthenticated]);
 
   const loadBlog = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Unauthorized');
-
-      const res = await api.get(`/blogs/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.get(`/blogs/${id}`); // token handled by api interceptor
       setBlog(res.data);
       setFormData({ title: res.data.title, content: res.data.content });
     } catch (error: any) {
@@ -71,12 +72,7 @@ const EditBlog = () => {
 
     setIsSaving(true);
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) throw new Error('Unauthorized');
-
-      await api.patch(`/blogs/${id}`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.patch(`/blogs/${id}`, formData); // token handled by api interceptor
 
       toast({
         title: "Blog updated!",
@@ -96,8 +92,8 @@ const EditBlog = () => {
   };
 
   const getExcerpt = (content: string) => {
-    return content.substring(0, 150) + (content.length > 150 ? '...' : '');
-  };
+  return content.substring(0, 150) + (content.length > 150 ? '...' : '');
+};
 
   const getReadTime = (content: string) => {
     const wordsPerMinute = 200;
@@ -105,7 +101,9 @@ const EditBlog = () => {
     return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
   };
 
+
   if (isLoading) return <LoadingSpinner />;
+
   if (!blog) return (
     <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
       <div className="text-center">
