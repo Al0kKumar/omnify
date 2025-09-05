@@ -13,14 +13,14 @@ import java.util.function.Function;
 public class JwtUtil {
     private final long EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 hours
 
-    private static final String SECRET_KEY = "ThisIsASuperStrongSecretKeyForJwt1234567890!"; // keep it strong
+    private static final String SECRET_KEY = "ThisIsASuperStrongSecretKeyForJwt1234567890!"; 
 
     public String generateToken(String userId, String email) {
         return Jwts.builder()
                 .setSubject(userId)
                 .claim("email", email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) 
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
     }

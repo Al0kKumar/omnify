@@ -15,7 +15,7 @@ import java.io.IOException;
 @Component
 public class JWTAuthFilter extends OncePerRequestFilter{
 
-    private final JwtUtil jwtUtil; // ✅ final
+    private final JwtUtil jwtUtil; 
 
     public JWTAuthFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -39,7 +39,6 @@ public class JWTAuthFilter extends OncePerRequestFilter{
                             new UsernamePasswordAuthenticationToken(email, null, null);
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // ✅ put user into Spring Security context
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (Exception e) {

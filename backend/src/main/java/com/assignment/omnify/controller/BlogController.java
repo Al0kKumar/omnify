@@ -30,7 +30,7 @@ public class BlogController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody BlogRequest request) {
 
-        String token = authHeader.substring(7); // remove "Bearer "
+        String token = authHeader.substring(7);
         String userId = jwtUtil.extractUserId(token);
 
         return ResponseEntity.ok(blogService.createBlog(request, userId));
@@ -55,7 +55,7 @@ public class BlogController {
     public ResponseEntity<BlogResponse> updateBlog(
             @PathVariable String id,
             @RequestBody BlogRequest request,
-            @AuthenticationPrincipal String email) {  // <- directly
+            @AuthenticationPrincipal String email) {  
         String userId = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"))
                 .getId();

@@ -32,7 +32,7 @@ public class AuthService {
         }
 
         User user = new User();
-        user.setEmail(email); // ✅ save lowercase
+        user.setEmail(email); 
         user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
@@ -45,9 +45,6 @@ public class AuthService {
 
     public TokenResponse login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase();
-
-        System.out.println(">>> Login request email: " + request.getEmail());
-        System.out.println(">>> Normalized email: " + email);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
