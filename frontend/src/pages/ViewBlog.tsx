@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
+import { api } from '@/utils/api';
 
 interface Blog {
   id: string;
@@ -36,7 +37,7 @@ const ViewBlog = () => {
       const token = localStorage.getItem('authToken');
       if (!token) throw new Error('Unauthorized');
 
-      const res = await axios.get(`http://localhost:8080/api/blogs/${id}`, {
+      const res = await api.get(`/blogs/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

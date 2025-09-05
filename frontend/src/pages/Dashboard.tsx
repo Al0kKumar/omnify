@@ -9,6 +9,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Plus, Edit3, Trash2, Eye, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
+import { api } from '@/utils/api';
 
 interface Blog {
   id: string;
@@ -36,7 +37,7 @@ const Dashboard = () => {
       const token = localStorage.getItem('authToken');
       if (!token) throw new Error('Unauthorized');
 
-      const res = await axios.get('http://localhost:8080/api/blogs', {
+      const res = await api.get('/blogs', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -67,7 +68,7 @@ const Dashboard = () => {
       const token = localStorage.getItem('authToken');
       if (!token) throw new Error('Unauthorized');
 
-      await axios.delete(`http://localhost:8080/api/blogs/${blogId}`, {
+      await api.delete(`/blogs/${blogId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PenTool, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
+import { api } from '@/utils/api';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -58,7 +59,7 @@ const Signup = () => {
 
     try {
       // Call backend signup API directly
-      const res = await axios.post('http://localhost:8080/api/auth/signup', {
+      const res = await api.post('/auth/signup', {
         name: formData.name,
         email: formData.email,
         password: formData.password

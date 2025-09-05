@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PenTool, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
+import { api } from '@/utils/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -33,7 +34,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:8080/api/auth/login', {
+      const res = await api.post('/auth/login', {
         email,
         password
       });

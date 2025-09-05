@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import { Save, Eye, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
+import { api } from '@/utils/api';
 
 const CreateBlog = () => {
   const [formData, setFormData] = useState({
@@ -50,7 +51,7 @@ const CreateBlog = () => {
       const token = localStorage.getItem('authToken');
       if (!token) throw new Error('Unauthorized');
 
-      await axios.post('http://localhost:8080/api/blogs', formData, {
+      await api.post('/blogs', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

@@ -10,6 +10,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Eye, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
+import { api } from '@/utils/api';
 
 interface Blog {
   id: string;
@@ -36,7 +37,7 @@ const EditBlog = () => {
       const token = localStorage.getItem('authToken');
       if (!token) throw new Error('Unauthorized');
 
-      const res = await axios.get(`http://localhost:8080/api/blogs/${id}`, {
+      const res = await api.get(`/blogs/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -73,7 +74,7 @@ const EditBlog = () => {
       const token = localStorage.getItem('authToken');
       if (!token) throw new Error('Unauthorized');
 
-      await axios.patch(`http://localhost:8080/api/blogs/${id}`, formData, {
+      await api.patch(`/blogs/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
