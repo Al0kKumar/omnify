@@ -34,7 +34,7 @@ const ViewBlog = () => {
   const loadBlog = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) throw new Error('Unauthorized');
 
       const res = await api.get(`/blogs/${id}`, {

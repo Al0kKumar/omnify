@@ -48,7 +48,7 @@ const CreateBlog = () => {
 
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) throw new Error('Unauthorized');
 
       await api.post('/blogs', formData, {
