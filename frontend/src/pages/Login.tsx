@@ -41,6 +41,7 @@ const Login = () => {
 
       // Save JWT in localStorage
       localStorage.setItem('token', res.data.token);
+      console.log("token is " , res.data.token);
 
       toast({
         title: "Welcome back!",
