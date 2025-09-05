@@ -6,9 +6,6 @@ build/
 !**/src/test/**/build/
 
 
-# Ignore application config
-src/main/resources/application.properties
-
 
 ### STS ###
 .apt_generated
