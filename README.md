@@ -3,7 +3,7 @@
 A full-stack **Blog Management Platform** built with **React + Vite (frontend)**, **Spring Boot (backend)**, and **MongoDB (database)**.  
 It allows users to **sign up, log in, create, edit, delete, and view blog posts**.  
 
-🔗 **Live Demo:** [https://your-vercel-app-url.vercel.app](https://omnify-red.vercel.app/)
+🔗 **Live Demo:** [https://omnify-red.vercel.app/](https://omnify-red.vercel.app/)
 
 ---
 
