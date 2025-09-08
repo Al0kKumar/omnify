@@ -11,8 +11,8 @@ import { api } from '@/utils/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('mishraalok189381@gmail.com');
+  const [password, setPassword] = useState('ekthatiger');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
